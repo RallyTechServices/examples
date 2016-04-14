@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CustomPortfolioPicker</title>
+
+    <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                Ext.override(Ext.util.Filter,{createFilterFn:function(){var me=this,matcher=me.createValueMatcher(),property=Ext.isArray(me.property)?me.property:me.property.split(",");return function(item){for(var hasmatch=!1,i=0;property.length>i;i++)if(matcher.test(me.getRoot.call(me,item)[property[i]])){hasmatch=!0;break}return null===matcher?null===value:hasmatch}}});
+                Ext.define("CustomApp",{extend:"Rally.app.App",componentCls:"app",artifactType:"portfolioitem/roadmap",items:[{xtype:"container",itemId:"artifactSelectorBox",padding:10},{xtype:"container",itemId:"selectedArtifactBox",padding:10,tpl:"<tpl><b>{FormattedID}: {Name}</b> was selected.</tpl>"}],launch:function(){this.addArtifactPicker()},addArtifactPicker:function(){var cb=Ext.create("Rally.ui.combobox.ComboBox",{storeConfig:{model:this.artifactType,fetch:["FormattedID","ObjectID","Name"],remoteFilter:!1,autoLoad:!0},valueField:"ObjectID",displayField:"FormattedID",width:300,listConfig:{itemTpl:"{FormattedID}: {Name}"},filterProperties:["Name","FormattedID"],displayTpl:'<tpl for=".">{[values["FormattedID"]]}: {[values["Name"]]}<tpl if="xindex < xcount">,</tpl></tpl>'});cb.on("ready",this.updateArtifact,this),cb.on("select",this.updateArtifact,this),this.down("#artifactSelectorBox").add(cb)},updateArtifact:function(cb){cb&&cb.getRecord()&&this.down("#selectedArtifactBox").update(cb.getRecord().getData())}});
+
+            Rally.launchApp('CustomApp', {
+                name:"CustomPortfolioPicker",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+    <style type="text/css">
+        
+    </style>
+</head>
+<body>
+</body>
+</html>

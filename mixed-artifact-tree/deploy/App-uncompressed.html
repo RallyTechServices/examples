@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MixedArtifactTree</title>
+
+    <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                /**
+ * We need to add a property for TestCase so it shows up as an eligible parent type in order to
+ * show test cases at the top of the list.  Unfortunately, explicitly setting parent types does not
+ * override this.
+ */
+Ext.override(Rally.data.wsapi.ParentChildMapper, {
+
+    constructor: function () {
+        this.parentChildTypeMap = {
+            hierarchicalrequirement: [
+                {typePath: 'defect', collectionName: 'Defects', parentField: 'Requirement'},
+                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
+                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'},
+                {typePath: 'hierarchicalrequirement', collectionName: 'Children', parentField: 'Parent'}
+            ],
+            defect: [
+                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
+                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'}
+            ],
+            defectsuite: [
+                {typePath: 'defect', collectionName: 'Defects', parentField: 'DefectSuites'},
+                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
+                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'}
+            ],
+            testset: [
+                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
+                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'TestSets'}
+            ],
+
+            /**
+             * override below
+             */
+            testcase: [
+                {typePath: 'defect', collectionName: 'Defects', parentField: 'TestCase'}
+            ]
+        };
+    }
+});
+                Ext.define('CustomApp', {
+    extend: 'Rally.app.App',
+    componentCls: 'app',
+
+    launch: function() {
+        //Write app code here
+        this.buildTreeStoreWithMixedArtifacts();
+    },
+    getTypePaths: function(){
+        return ['TestCase','HierarchicalRequirement','Defect'];
+    },
+    buildTreeStoreWithMixedArtifacts: function(){
+
+        Ext.create('Rally.data.wsapi.TreeStoreBuilder').build({
+            models: this.getTypePaths(),
+            root: {
+                expanded: true
+            },
+            enableHierarchy: true,
+            filters: this.getFilters()
+        }).then({
+            success: this.addGridboard,
+            scope: this
+        });
+    },
+    /**
+     * This filter will show all user stories and defects that have test cases
+     * and any test cases that do not belong to stories at the top level
+     * @returns {A WSAPI filter object}
+     */
+    getFilters: function(){
+
+        var filters = [{
+            property: 'WorkProduct',
+            operator: '=',
+            value: ""
+        },{
+            property: 'TestCases.ObjectID',
+            operator: '>',
+            value: 0
+        }];
+        return Rally.data.wsapi.Filter.or(filters);
+    },
+    addGridboard: function(store){
+        var context = this.getContext();
+
+        this.add({
+            xtype: 'rallygridboard',
+            context: context,
+            gridConfig: {
+                store: store,
+                storeConfig: {
+                    filters: this.getFilters()
+                },
+                columnCfgs: ['Name'],
+                showPagingToolbar: true
+            },
+            plugins: [
+                'rallygridboardaddnew',
+                {
+                    ptype: 'rallygridboardcustomfiltercontrol',
+                    filterControlConfig: {
+                        modelNames: this.getTypePaths(),
+                        stateful: true,
+                        stateId: context.getScopedStateId('custom-filter-example')
+                    },
+                    showOwnerFilter: false
+                },{
+                    ptype: 'rallygridboardfieldpicker',
+                    headerPosition: 'left',
+                    modelNames: this.getTypePaths(),
+                    stateful: true,
+                    stateId: context.getScopedStateId('columns-example')
+            }],
+            modelNames: this.getTypePaths(),
+            height: this.getHeight()
+        });
+    }
+});
+
+
+            Rally.launchApp('CustomApp', {
+                name:"MixedArtifactTree",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+    <style type="text/css">
+        .app {
+  /* Add app styles here */
+}
+
+    </style>
+</head>
+<body>
+</body>
+</html>

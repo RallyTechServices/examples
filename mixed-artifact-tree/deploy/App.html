@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MixedArtifactTree</title>
+
+    <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                Ext.override(Rally.data.wsapi.ParentChildMapper,{constructor:function(){this.parentChildTypeMap={hierarchicalrequirement:[{typePath:"defect",collectionName:"Defects",parentField:"Requirement"},{typePath:"task",collectionName:"Tasks",parentField:"WorkProduct"},{typePath:"testcase",collectionName:"TestCases",parentField:"WorkProduct"},{typePath:"hierarchicalrequirement",collectionName:"Children",parentField:"Parent"}],defect:[{typePath:"task",collectionName:"Tasks",parentField:"WorkProduct"},{typePath:"testcase",collectionName:"TestCases",parentField:"WorkProduct"}],defectsuite:[{typePath:"defect",collectionName:"Defects",parentField:"DefectSuites"},{typePath:"task",collectionName:"Tasks",parentField:"WorkProduct"},{typePath:"testcase",collectionName:"TestCases",parentField:"WorkProduct"}],testset:[{typePath:"task",collectionName:"Tasks",parentField:"WorkProduct"},{typePath:"testcase",collectionName:"TestCases",parentField:"TestSets"}],testcase:[{typePath:"defect",collectionName:"Defects",parentField:"TestCase"}]}}});
+                Ext.define("CustomApp",{extend:"Rally.app.App",componentCls:"app",launch:function(){this.buildTreeStoreWithMixedArtifacts()},getTypePaths:function(){return["TestCase","HierarchicalRequirement","Defect"]},buildTreeStoreWithMixedArtifacts:function(){Ext.create("Rally.data.wsapi.TreeStoreBuilder").build({models:this.getTypePaths(),root:{expanded:!0},enableHierarchy:!0,filters:this.getFilters()}).then({success:this.addGridboard,scope:this})},getFilters:function(){var filters=[{property:"WorkProduct",operator:"=",value:""},{property:"TestCases.ObjectID",operator:">",value:0}];return Rally.data.wsapi.Filter.or(filters)},addGridboard:function(store){var context=this.getContext();this.add({xtype:"rallygridboard",context:context,gridConfig:{store:store,storeConfig:{filters:this.getFilters()},columnCfgs:["Name"],showPagingToolbar:!0},plugins:["rallygridboardaddnew",{ptype:"rallygridboardcustomfiltercontrol",filterControlConfig:{modelNames:this.getTypePaths(),stateful:!0,stateId:context.getScopedStateId("custom-filter-example")},showOwnerFilter:!1},{ptype:"rallygridboardfieldpicker",headerPosition:"left",modelNames:this.getTypePaths(),stateful:!0,stateId:context.getScopedStateId("columns-example")}],modelNames:this.getTypePaths(),height:this.getHeight()})}});
+
+            Rally.launchApp('CustomApp', {
+                name:"MixedArtifactTree",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+    <style type="text/css">
+        
+    </style>
+</head>
+<body>
+</body>
+</html>

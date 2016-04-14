@@ -1,0 +1,13 @@
+{
+   "name": "CustomPortfolioPicker",
+   "className": "CustomApp",
+   "server": "https://rally1.rallydev.com",
+   "sdk": "2.0",
+   "javascript": [
+      "Overrides.js",
+      "App.js"
+   ],
+   "css": [
+      "app.css"
+   ]
+}
