@@ -10,6 +10,14 @@ Test Cases that do not belong to a User Story or Defect in one grid.
 ## Overview
 This example is to build a gridboard that shows TestCases, Defects and User Stories at the same level.  
 
+##Interesting Bits
+In this app, we have to override a dependency of the TreeGrid so that we can show TestCases at the "parent" level.
+These modifications are found in the overrides.js file.  Please note that the class that we are overriding is 
+private and there should be a disclaimer that it can change at any time.  
+
+##Tags
+gridboard parenttypes parentchildmapper
+
 ## License
 
 AppTemplate is released under the MIT license.  See the file [LICENSE](./LICENSE) for the full text.
